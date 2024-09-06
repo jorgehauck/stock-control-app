@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { CookieService } from 'ngx-cookie-service';
 import { Observable } from 'rxjs';
 import { AuthRequest } from 'src/app/models/interfaces/user/auth/AuthRequest';
 import { AuthResponse } from 'src/app/models/interfaces/user/auth/AuthResponse';
@@ -14,7 +15,7 @@ export class UserService {
 
   private readonly API_URL = environment.API_URL;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private cookie: CookieService) { }
 
   public signUpUser(requestData: SinupUserRequest): Observable<SinupUserResponse> {
     return this.http.post<SinupUserResponse>(`${this.API_URL}/user`, requestData);
@@ -24,4 +25,9 @@ export class UserService {
     return this.http.post<AuthResponse>(`${this.API_URL}/auth`, requestDatas);
   }
 
+  public isLoggedIn(): boolean {
+    // Verificar se o usuário possui um token ou cookie.
+    const JWT_TOKEN = this.cookie.get('USER_INFO');
+    return JWT_TOKEN ? true : false;
+  }
 }
