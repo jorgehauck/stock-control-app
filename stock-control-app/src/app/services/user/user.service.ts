@@ -28,6 +28,7 @@ export class UserService {
   public isLoggedIn(): boolean {
     // Verificar se o usuário possui um token ou cookie.
     const JWT_TOKEN = this.cookie.get('USER_INFO');
+
     return JWT_TOKEN ? true : false;
   }
 }

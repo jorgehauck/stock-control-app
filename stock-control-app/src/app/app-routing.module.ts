@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, CanLoad } from '@angular/router';
 import { HomeComponent } from './modules/home/home.component';
-import { AuthGuard } from './guards/auth-guard.service';
 import { DashboardHomeComponent } from './modules/dashboard/page/dashboard-home/dashboard-home.component';
+import { AuthService } from './guards/auth.service';
 
 
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
   },
   {
@@ -18,7 +18,7 @@ const routes: Routes = [
   {
     path: 'dashboard',
     loadChildren: () => import('./modules/dashboard/dashboard.module').then(m => m.DashboardModule),
-    canActivate: [AuthGuard]  // TODO: Implementar o modulo de dashboard e adicionar o guard para o acesso a ele
+    canActivate: [AuthService]
   }
 ];
 
