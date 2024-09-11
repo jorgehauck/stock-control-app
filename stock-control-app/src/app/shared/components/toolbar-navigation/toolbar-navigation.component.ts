@@ -18,5 +18,4 @@ export class ToolbarNavigationComponent {
       this.userService.handleLogout();
       this.router.navigate(['/home']);
     }
-
 }
