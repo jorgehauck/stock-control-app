@@ -31,4 +31,8 @@ export class UserService {
 
     return JWT_TOKEN ? true : false;
   }
+
+  public handleLogout(): void {
+    this.cookie.delete('USER_INFO');
+  }
 }
