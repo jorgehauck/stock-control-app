@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { UserService } from './../../services/user/user.service';
 import { SinupUserRequest } from 'src/app/models/interfaces/user/SignupUserRequest';
@@ -6,13 +6,15 @@ import { AuthRequest } from 'src/app/models/interfaces/user/auth/AuthRequest';
 import { CookieService } from 'ngx-cookie-service';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent {
+export class HomeComponent implements OnDestroy {
+  private destroy$ = new Subject<void>();
   loginCard = true;
 
   constructor(
@@ -36,7 +38,11 @@ export class HomeComponent {
 
   public onSubmit(): void {
     if (this.loginForm.value && this.loginForm.valid) {
-      this.userService.authUser(this.loginForm.value as AuthRequest).subscribe({
+      this.userService.authUser(this.loginForm.value as AuthRequest)
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
         next: (response) => {
           if (response) {
             this.cookieService.set('USER_INFO', response?.token);
@@ -69,6 +75,9 @@ export class HomeComponent {
     if (this.singnUpForm.value && this.singnUpForm.valid) {
       this.userService
         .signUpUser(this.singnUpForm.value as SinupUserRequest)
+        .pipe(
+          takeUntil(this.destroy$)
+        )
         .subscribe({
           next: (response) => {
             if (response) {
@@ -93,5 +102,9 @@ export class HomeComponent {
           },
         });
     }
+  }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
