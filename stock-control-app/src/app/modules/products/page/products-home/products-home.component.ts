@@ -59,9 +59,6 @@ export class ProductsHomeComponent implements OnInit, OnDestroy {
     })
   }
 
-
-
-
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
