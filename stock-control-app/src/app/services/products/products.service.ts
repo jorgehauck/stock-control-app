@@ -2,11 +2,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
 import { map, Observable } from 'rxjs';
+import { DeleteProductResponse } from 'src/app/models/interfaces/products/response/DeleteProductResponse';
 import { GetAllProductsResponse } from 'src/app/models/interfaces/products/response/GetAllProductsResponse';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductsService {
   private readonly API_URL = environment.API_URL;
@@ -15,16 +16,29 @@ export class ProductsService {
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.JWT_TOKEN}`
-    })
-  }
-  constructor(
-    private http: HttpClient,
-    private cookie: CookieService) { }
+      Authorization: `Bearer ${this.JWT_TOKEN}`,
+    }),
+  };
+  constructor(private http: HttpClient, private cookie: CookieService) {}
 
-    public getAllProducts(): Observable<Array<GetAllProductsResponse>> {
-      return this.http.get<Array<GetAllProductsResponse>>(
-        `${this.API_URL}/products`, this.httpOptions
-      ).pipe(map((product) => product.filter((data) => data?.amount > 0)));
-    }
+  public getAllProducts(): Observable<Array<GetAllProductsResponse>> {
+    return this.http
+      .get<Array<GetAllProductsResponse>>(
+        `${this.API_URL}/products`,
+        this.httpOptions
+      )
+      .pipe(map((product) => product.filter((data) => data?.amount > 0)));
+  }
+
+  public deleteProduct(product_id: string): Observable<DeleteProductResponse> {
+    return this.http.delete<DeleteProductResponse>(
+      `${this.API_URL}/product/delete`,
+      {
+        ...this.httpOptions,
+        params: {
+          product_id: product_id,
+        },
+      }
+    );
+  }
 }
