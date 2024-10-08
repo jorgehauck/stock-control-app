@@ -22,6 +22,7 @@ import { ConfirmationService } from 'primeng/api';
 import { ProductsHomeComponent } from './page/products-home/products-home.component';
 import { RouterModule } from '@angular/router';
 import { ProductsTableComponent } from './components/products-table/products-table.component';
+import { ProductFormComponent } from './components/product-form/product-form.component';
 
 
 
@@ -29,7 +30,8 @@ import { ProductsTableComponent } from './components/products-table/products-tab
 @NgModule({
   declarations: [
     ProductsHomeComponent,
-    ProductsTableComponent
+    ProductsTableComponent,
+    ProductFormComponent
   ],
   imports: [
     CommonModule,
