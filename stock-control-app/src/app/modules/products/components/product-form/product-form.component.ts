@@ -2,10 +2,16 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { Subject, takeUntil } from 'rxjs';
+import { ProductEvent } from 'src/app/models/enums/products/ProductEvent';
 import { GetCategoriesResponse } from 'src/app/models/interfaces/categories/responses/GetCategoriesResponse';
+import { EventAction } from 'src/app/models/interfaces/products/event/EventAction';
 import { CreateProductRequest } from 'src/app/models/interfaces/products/request/CreateProductRequest';
+import { EditProductRequest } from 'src/app/models/interfaces/products/request/EditProductRequest';
+import { GetAllProductsResponse } from 'src/app/models/interfaces/products/response/GetAllProductsResponse';
 import { CategoriesService } from 'src/app/services/categories/categories.service';
+import { ProductsDataTransferService } from 'src/app/services/products/products-data-transfer.service';
 import { ProductsService } from 'src/app/services/products/products.service';
 
 @Component({
@@ -17,7 +23,12 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   private readonly destroy$: Subject<void> = new Subject<void>();
   public categoriesData: Array<GetCategoriesResponse> = [];
   public selectedCategory: Array<{name: string; code: string}> = [];
-
+  public productAction!: {
+    event: EventAction,
+    productsDatas: Array<GetAllProductsResponse>;
+  };
+  public productSelectedDatas!: GetAllProductsResponse;
+  public productsDatas: Array<GetAllProductsResponse> = [];
   public addProductForm = this.formBuilder.group({
     name: ['', Validators.required],
     price: ['', Validators.required],
@@ -26,17 +37,38 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     amount: [0, Validators.required]
   });
 
+  public editProductForm = this.formBuilder.group({
+    name: ['', Validators.required],
+    price: ['', Validators.required],
+    description: ['', Validators.required],
+    amount: [0, Validators.required]
+  });
+
+  public addProductAction = ProductEvent.ADD_PRODCUT_EVENT;
+  public editProductAction = ProductEvent.EDIT_PRODUCT_EVENT;
+  public saleProductAction = ProductEvent.SALE_PRODUCT_EVENT;
+
   constructor(
     private categoriesService: CategoriesService,
     private productService: ProductsService,
+    private productsDtService: ProductsDataTransferService,
     private formBuilder: FormBuilder,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    public ref: DynamicDialogConfig,
   ) { }
 
 
   ngOnInit(): void {
+    this.productAction = this.ref.data;
     this.getAllCategories();
+
+    if (this.productAction?.event?.action === this.editProductAction && this.productAction?.productsDatas) {
+      this.getProductSelectedDatas(this.productAction?.event?.id as string);
+    }
+
+    this.productAction?.event?.action === this.saleProductAction &&
+      this.getProductDatas();
   }
 
   private getAllCategories(): void {
@@ -89,6 +121,79 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       })
     }
     this.addProductForm.reset();
+  }
+
+  public handleSubmitEditProduct(): void {
+    if (
+      this.editProductForm.value &&
+      this.editProductForm.valid &&
+      this.productAction.event.id
+    ) {
+        const requestEditProduct: EditProductRequest = {
+          name: this.editProductForm.value.name as string,
+          price: this.editProductForm.value.price as string,
+          description: this.editProductForm.value.description as string,
+          product_id: this.productAction?.event?.id,
+          amount: this.editProductForm.value.amount as number
+        };
+
+        this.productService
+        .editProdcut(requestEditProduct)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: 'Produto editado com sucesso!',
+              life: 2500,
+            });
+            this.editProductForm.reset();
+          }, error: (err) => {
+             console.error(err);
+             this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: 'Erro ao editar produto!',
+              life: 2500
+             });
+             this.editProductForm.reset();
+          }
+        })
+    }
+  }
+
+  public getProductSelectedDatas(productId: string): void {
+    const allProducts = this.productAction?.productsDatas;
+
+    if (allProducts.length > 0) {
+      const productFiltered = allProducts.filter((element) => element?.id === productId);
+
+      if (productFiltered) {
+        this.productSelectedDatas = productFiltered[0];
+
+        this.editProductForm.setValue({
+          name: this.productSelectedDatas?.name,
+          price: this.productSelectedDatas?.price,
+          amount: this.productSelectedDatas?.amount,
+          description: this.productSelectedDatas?.description
+        });
+      }
+    }
+  }
+
+  public getProductDatas(): void {
+    this.productService.getAllProducts()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (response) => {
+        if (response.length > 0) {
+          this.productsDatas = response;
+          this.productsDatas &&
+            this.productsDtService.setProductsDatas(this.productsDatas);
+        }
+      }
+    });
   }
 
 
