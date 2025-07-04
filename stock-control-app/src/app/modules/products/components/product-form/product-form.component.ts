@@ -25,7 +25,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   public selectedCategory: Array<{name: string; code: string}> = [];
   public productAction!: {
     event: EventAction,
-    productsDatas: Array<GetAllProductsResponse>;
+    productDatas: Array<GetAllProductsResponse>;
   };
   public productSelectedDatas!: GetAllProductsResponse;
   public productsDatas: Array<GetAllProductsResponse> = [];
@@ -63,7 +63,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     this.productAction = this.ref.data;
     this.getAllCategories();
 
-    if (this.productAction?.event?.action === this.editProductAction && this.productAction?.productsDatas) {
+    if (this.productAction?.event?.action === this.editProductAction && this.productAction?.productDatas) {
       this.getProductSelectedDatas(this.productAction?.event?.id as string);
     }
 
@@ -141,7 +141,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
         .editProdcut(requestEditProduct)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
+          next: () => {
             this.messageService.add({
               severity: 'success',
               summary: 'Sucesso',
@@ -150,7 +150,6 @@ export class ProductFormComponent implements OnInit, OnDestroy {
             });
             this.editProductForm.reset();
           }, error: (err) => {
-             console.error(err);
              this.messageService.add({
               severity: 'error',
               summary: 'Erro',
@@ -164,7 +163,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   }
 
   public getProductSelectedDatas(productId: string): void {
-    const allProducts = this.productAction?.productsDatas;
+    const allProducts = this.productAction?.productDatas;
 
     if (allProducts.length > 0) {
       const productFiltered = allProducts.filter((element) => element?.id === productId);
