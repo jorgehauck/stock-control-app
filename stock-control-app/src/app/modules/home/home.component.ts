@@ -26,7 +26,7 @@ export class HomeComponent implements OnDestroy {
   ) {}
 
   loginForm = this.formBuilder.group({
-    email: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
 
