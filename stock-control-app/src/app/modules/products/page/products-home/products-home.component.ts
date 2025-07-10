@@ -8,6 +8,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { EventAction } from 'src/app/models/interfaces/products/event/EventAction';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ProductFormComponent } from '../../components/product-form/product-form.component';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-products-home',
@@ -25,7 +26,8 @@ export class ProductsHomeComponent implements OnInit, OnDestroy {
     private router: Router,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private sanitizer: DomSanitizer
   ) { }
   ngOnInit(): void {
     this.getProducts();
